@@ -18,7 +18,17 @@ import static java.lang.String.format;
 public class RegistrationPage {
 
     public static String typeCity = "";
-    private final SelenideElement formTitle = $(".practice-form-wrapper"), firstNameInput = $("#firstName"), lastNameInput = $("#lastName"), emailInput = $("#userEmail"), userNumberInput = $("#userNumber"), subjectsInput = $("#subjectsInput"), uploadPicture = $("#uploadPicture"), addressArea = $("#currentAddress"), stateOption = $("#react-select-3-input"), cityOption = $("#react-select-4-input"), submitForm = $("#submit");
+    private final SelenideElement formTitle = $(".practice-form-wrapper"),
+            firstNameInput = $("#firstName"),
+            lastNameInput = $("#lastName"),
+            emailInput = $("#userEmail"),
+            subjectsInput = $("#subjectsInput"),
+            userNumberInput = $("#userNumber"),
+            uploadPicture = $("#uploadPicture"),
+            addressArea = $("#currentAddress"),
+            stateOption = $("#react-select-3-input"),
+            cityOption = $("#react-select-4-input"),
+            submitForm = $("#submit");
     public CalenderComponent calender = new CalenderComponent();
 
     public static int random(int max) {
@@ -35,9 +45,20 @@ public class RegistrationPage {
         firstNameInput.setValue(value);
         return this;
     }
-
+    public RegistrationPage typeAddress(String value) {
+        addressArea.setValue(value);
+        return this;
+    }
     public RegistrationPage typeLastName(String value) {
         lastNameInput.setValue(value);
+        return this;
+    }
+    public RegistrationPage typeEmail(String value) {
+        emailInput.setValue(value);
+        return this;
+    }
+    public RegistrationPage typeSubjects() {
+        subjectsInput.setValue(TestDataHelper.SUBJECTS_INPUT).pressEnter();
         return this;
     }
 
@@ -46,6 +67,10 @@ public class RegistrationPage {
         return this;
     }
 
+    public RegistrationPage typeHobbies(String key) {
+        $x("//label[@for='hobbies-checkbox-" + key + "']").click();
+        return this;
+    }
     public RegistrationPage typePhoneNumber(String value) {
         userNumberInput.setValue(value);
         return this;
@@ -89,6 +114,13 @@ public class RegistrationPage {
         $x("//td[text()='Date of Birth']").parent().shouldHave(text(day + " " + month + "," + year));
     }
 
+    public void checkResultsMS(String firstname, String lastname, String phone, String gender, String expectedGender, String picture) {
+        $x("//td[text()='Student Name']").parent().shouldHave(text(firstname + " " + lastname));
+        $x("//td[text()='Gender']").parent().shouldHave(text(expectedGender));
+        $x("//td[text()='Mobile']").parent().shouldHave(text(phone));
+        $x("//td[text()='Picture']").parent().shouldHave(text(picture));
+    }
+
     public void checkResultsData(Map<String, String> expectedData) {
         ElementsCollection lines = $$(".table-responsive tbody tr").snapshot();
 
@@ -96,11 +128,13 @@ public class RegistrationPage {
 
         for (SelenideElement line : lines) {
             String keyTd = line.$("td").text();
-            if (keyTd.equals("Student Name") || keyTd.equals("Mobile")) {
+            if (!keyTd.equals("State and City") ) {
                 String expectedValue = expectedData.get(keyTd);
                 String actualValueTd = line.$("td", 1).text();
 
-                softly.assertThat(actualValueTd).as(format("\nTable: %s contains %s, but expected %s", keyTd, expectedValue, actualValueTd)).isEqualTo(expectedValue);
+                softly.assertThat(actualValueTd)
+                        .as(format("\nTable: %s contains %s, but expected %s", keyTd, expectedValue, actualValueTd))
+                        .isEqualTo(expectedValue);
             }
             softly.assertAll();
         }
